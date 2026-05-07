@@ -18,6 +18,11 @@ public class WeatherController {
         return weatherService.getCurrent(lat, lon);
     }
 
+    @GetMapping("/hourly")
+    public WeatherResponse hourly(@RequestParam double lat, @RequestParam double lon) {
+        return weatherService.getHourly(lat, lon);
+    }
+
     @GetMapping("/daily")
     public WeatherResponse daily(@RequestParam double lat, @RequestParam double lon) {
         return weatherService.getDaily(lat, lon);

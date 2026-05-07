@@ -37,21 +37,28 @@ public class WeatherService {
         return parse(getWeather(lat, lon, WeatherCacheType.DAILY));
     }
 
+    public WeatherResponse getHourly(double lat, double lon) {
+        return parse(getWeather(lat, lon, WeatherCacheType.HOURLY));
+    }
+
     private WeatherResponse parse(JsonNode node) {
         return objectMapper.convertValue(node, WeatherResponse.class);
     }
 
     private JsonNode getWeather(double lat, double lon, WeatherCacheType type) {
-        return cacheService.getFreshCache(lat, lon, type)
+        JsonNode result;
+        result = cacheService.getFreshCache(lat, lon, type)
                 .map(WeatherCache::getDataJson)
                 .orElseGet(() -> fetchAndCache(lat, lon, type));
+        return result;
     }
 
     private JsonNode fetchAndCache(double lat, double lon, WeatherCacheType type) {
-        String exclude = (type == WeatherCacheType.CURRENT)
-                ? "minutely,hourly,daily,alerts"
-                : "current,minutely,hourly,alerts";
-
+        String exclude = switch (type) {
+            case CURRENT -> "minutely,hourly,daily,alerts";
+            case DAILY -> "current,minutely,hourly,alerts";
+            case HOURLY -> "current,minutely,daily,alerts";
+        };
         String url = baseUrl + "/data/3.0/onecall?lat=" + lat + "&lon=" + lon +
                 "&exclude=" + exclude + "&units=metric&lang=en&appid=" + apiKey;
 

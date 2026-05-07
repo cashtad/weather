@@ -16,6 +16,7 @@ public class WeatherResponse {
 
     private Current current;
     private List<Daily> daily;
+    private List<Hourly> hourly;
 
     @Data
     public static class Current {
@@ -43,7 +44,41 @@ public class WeatherResponse {
         @JsonProperty("wind_deg")
         private int windDeg;
 
+        @JsonProperty("wind_gust")
+        private Double windGust;   // ✅ добавь это
+
         private List<Weather> weather;
+    }
+
+    @Data
+    public static class Hourly {
+        private long dt;
+        private double temp;
+        @JsonProperty("feels_like")
+        private double feelsLike;
+        private int pressure;
+        private int humidity;
+        @JsonProperty("dew_point")
+        private double dewPoint;
+        private double uvi;
+        private int clouds;
+        private int visibility;
+        @JsonProperty("wind_speed")
+        private double windSpeed;
+        @JsonProperty("wind_deg")
+        private int windDeg;
+        @JsonProperty("wind_gust")
+        private Double windGust;
+        private List<Weather> weather;
+        private double pop;
+        @JsonProperty("rain")
+        private Rain rain;
+
+        @Data
+        public static class Rain {
+            @JsonProperty("1h")
+            private Double oneHour;
+        }
     }
 
     @Data
