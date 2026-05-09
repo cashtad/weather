@@ -21,6 +21,7 @@ public class WeatherService {
 
     private final RestTemplate restTemplate;
     private final CacheService cacheService;
+    private final WeatherResponseProcessor responseProcessor;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${openweather.api-key}")
@@ -41,16 +42,18 @@ public class WeatherService {
         return parse(getWeather(lat, lon, WeatherCacheType.HOURLY));
     }
 
+    public WeatherResponse getAll(double lat, double lon) {
+        return parse(getWeather(lat, lon, WeatherCacheType.ALL));
+    }
+
     private WeatherResponse parse(JsonNode node) {
         return objectMapper.convertValue(node, WeatherResponse.class);
     }
 
     private JsonNode getWeather(double lat, double lon, WeatherCacheType type) {
-        JsonNode result;
-        result = cacheService.getFreshCache(lat, lon, type)
+        return cacheService.getFreshCache(lat, lon, type)
                 .map(WeatherCache::getDataJson)
                 .orElseGet(() -> fetchAndCache(lat, lon, type));
-        return result;
     }
 
     private JsonNode fetchAndCache(double lat, double lon, WeatherCacheType type) {
@@ -58,6 +61,7 @@ public class WeatherService {
             case CURRENT -> "minutely,hourly,daily,alerts";
             case DAILY -> "current,minutely,hourly,alerts";
             case HOURLY -> "current,minutely,daily,alerts";
+            case ALL -> "minutely,alerts";
         };
         String url = baseUrl + "/data/3.0/onecall?lat=" + lat + "&lon=" + lon +
                 "&exclude=" + exclude + "&units=metric&lang=en&appid=" + apiKey;
@@ -68,9 +72,13 @@ public class WeatherService {
                 throw new ResponseStatusException(BAD_GATEWAY, "Unexpected weather data");
             }
 
-            JsonNode node = objectMapper.readTree(json);
-            cacheService.saveCache(lat, lon, type, node);
-            return node;
+            JsonNode rawNode = objectMapper.readTree(json);
+            WeatherResponse response = objectMapper.convertValue(rawNode, WeatherResponse.class);
+            WeatherResponse processed = responseProcessor.process(response);
+            JsonNode processedNode = objectMapper.valueToTree(processed);
+
+            cacheService.saveCache(lat, lon, type, processedNode);
+            return processedNode;
         } catch (RestClientException ex) {
             throw new ResponseStatusException(SERVICE_UNAVAILABLE, "OpenWeather API unavailable");
         } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {

@@ -21,6 +21,7 @@ public class WeatherResponse {
     private List<Minutely> minutely;
     private List<Hourly> hourly;
     private List<Daily> daily;
+    private List<Alert> alerts;
 
     // ---------- Common Blocks ----------
     @Data
@@ -190,5 +191,19 @@ public class WeatherResponse {
         private double day;
         private double eve;
         private double night;
+    }
+
+    // ---------- Alerts ----------
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Alert {
+        @JsonProperty("sender_name")
+        private String senderName;
+
+        private String event;
+        private long start;
+        private long end;
+        private String description;
+        private List<String> tags;
     }
 }
