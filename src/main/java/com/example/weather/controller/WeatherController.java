@@ -27,4 +27,9 @@ public class WeatherController {
     public WeatherResponse daily(@RequestParam double lat, @RequestParam double lon) {
         return weatherService.getDaily(lat, lon);
     }
+
+    @GetMapping("/all")
+    public WeatherResponse all(@RequestParam double lat, @RequestParam double lon) {
+        return weatherService.getAll(lat, lon);
+    }
 }
