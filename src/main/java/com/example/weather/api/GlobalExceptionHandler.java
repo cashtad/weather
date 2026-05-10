@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -48,6 +49,34 @@ public class GlobalExceptionHandler {
                         "Validation failed",
                         "VALIDATION_ERROR",
                         400,
+                        req.getRequestURI(),
+                        Instant.now()
+                )
+        );
+    }
+
+
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleEmailRegistered(Exception ex, HttpServletRequest req) {
+        return ResponseEntity.status(409).body(
+                new ErrorResponse(
+                        "Email is already registered",
+                        "EMAIL_ALREADY_REGISTERED",
+                        409,
+                        req.getRequestURI(),
+                        Instant.now()
+                )
+        );
+    }
+
+    @ExceptionHandler({AuthenticationException.class})
+    public ResponseEntity<ErrorResponse> handleWrongCredentials(Exception ex, HttpServletRequest req) {
+        return ResponseEntity.status(409).body(
+                new ErrorResponse(
+                        "Wrong email or password",
+                        "UNAUTHORIZED",
+                        401,
                         req.getRequestURI(),
                         Instant.now()
                 )

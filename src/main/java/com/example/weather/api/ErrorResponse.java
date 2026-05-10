@@ -8,7 +8,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 public class ErrorResponse {
-    private String error;
+    private String message;
     private String code;
     private int status;
     private String path;

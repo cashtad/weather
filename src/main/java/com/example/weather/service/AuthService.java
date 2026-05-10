@@ -1,5 +1,6 @@
 package com.example.weather.service;
 
+import com.example.weather.api.AuthException;
 import com.example.weather.dto.*;
 import com.example.weather.entity.User;
 import com.example.weather.repository.UserRepository;
@@ -22,7 +23,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new AuthException("Email already exists");
         }
 
         User user = User.builder()
