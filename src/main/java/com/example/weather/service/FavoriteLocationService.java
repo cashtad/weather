@@ -7,6 +7,8 @@ import com.example.weather.entity.User;
 import com.example.weather.repository.FavoriteLocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,7 +49,7 @@ public class FavoriteLocationService {
         User user = userService.getCurrentUser();
         FavoriteLocation location = repository.findById(id)
                 .filter(l -> l.getUser().getId().equals(user.getId()))
-                .orElseThrow(() -> new RuntimeException("Location not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Favorite location not found"));
 
         repository.delete(location);
     }

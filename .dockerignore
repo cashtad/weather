@@ -1,0 +1,27 @@
+# Backend build context
+**
+!Dockerfile
+!pom.xml
+!mvnw
+!mvnw.cmd
+!.mvn/
+.mvn/**
+!.mvn/wrapper/
+!.mvn/wrapper/**
+!.mvn/maven.config
+!.mvn/jvm.config
+!src/
+src/**
+!src/main/
+!src/main/**
+**/.env*
+**/secrets/
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/*.log
+**/qa-screenshots/
+**/test-results/

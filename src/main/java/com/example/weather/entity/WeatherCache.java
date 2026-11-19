@@ -10,7 +10,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "weather_cache")
+@Table(name = "weather_cache", uniqueConstraints = @UniqueConstraint(
+        name = "uq_weather_cache_coords_type", columnNames = {"lat", "lon", "type"}))
 @Getter
 @Setter
 @NoArgsConstructor

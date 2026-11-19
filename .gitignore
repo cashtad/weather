@@ -1,0 +1,52 @@
+# Local environment and credentials; keep the documented template.
+.env
+.env.*
+!.env.example
+
+# Maven and Java build output.
+target/
+*.class
+*.jar
+*.war
+*.ear
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# Local IDE metadata and compiler output.
+.idea/
+*.iml
+*.ipr
+*.iws
+/out/
+.vscode/
+
+# Runtime logs, JVM crash reports and heap dumps.
+*.log
+/logs/
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Local verification output; keep documentation assets trackable.
+/qa-screenshots/
+/test-results/
+
+# Local database files, backups and private certificates.
+/pgdata/
+/backups/
+/secrets/
+*.dump
+*.backup
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# OS and editor temporary files.
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo

@@ -1,0 +1,24 @@
+# Frontend build context
+**
+!Dockerfile
+!nginx.conf
+!package.json
+!package-lock.json
+!index.html
+!vite.config.js
+!public/
+!public/**
+!src/
+!src/**
+**/.env*
+**/secrets/
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/*.log
+**/qa-screenshots/
+**/test-results/
+**/*.test.js

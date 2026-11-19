@@ -20,8 +20,30 @@ spring:
 
 openweather:
   api-key: ${OPENWEATHER_API_KEY}
-  base-url: https://api.openweathermap.org
+  base-url: ${OPENWEATHER_BASE_URL:https://api.openweathermap.org}
+  connect-timeout: ${OPENWEATHER_CONNECT_TIMEOUT:3s}
+  read-timeout: ${OPENWEATHER_READ_TIMEOUT:10s}
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:}
   expiration-ms: 86400000
+
+weather:
+  cache-ttl: ${WEATHER_CACHE_TTL:10m}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db

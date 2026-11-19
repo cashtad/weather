@@ -3,6 +3,10 @@ package com.example.weather.security;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.JwtException;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +22,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final SecurityErrorHandler errorHandler;
 
     @Override
     protected void doFilterInternal(
@@ -32,21 +37,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7);
-        if (!jwtService.isTokenValid(token)) {
-            filterChain.doFilter(request, response);
+        try {
+            String email = jwtService.extractEmail(authHeader.substring(7));
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        } catch (DataAccessResourceFailureException ex) {
+            SecurityContextHolder.clearContext();
+            errorHandler.authenticationUnavailable(request, response);
+            return;
+        } catch (JwtException | IllegalArgumentException | AuthenticationException ex) {
+            SecurityContextHolder.clearContext();
+            errorHandler.commence(request, response, new BadCredentialsException("Invalid authentication"));
             return;
         }
-
-        String email = jwtService.extractEmail(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
         filterChain.doFilter(request, response);
     }
 }

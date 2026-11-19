@@ -3,32 +3,41 @@ package com.example.weather.service;
 import com.example.weather.entity.WeatherCache;
 import com.example.weather.entity.WeatherCacheType;
 import com.example.weather.repository.WeatherCacheRepository;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class CacheService {
 
-    private static final Duration TTL = Duration.ofMinutes(10);
-    private final WeatherCacheRepository weatherCacheRepository;
+    private final WeatherCacheRepository repository;
+    private final Duration ttl;
 
-    public Optional<WeatherCache> getFreshCache(double lat, double lon, WeatherCacheType type) {
-        return weatherCacheRepository.findTopByLatAndLonAndType(lat, lon, type)
-                .filter(cache -> cache.getUpdatedAt().isAfter(Instant.now().minus(TTL)));
+    public CacheService(WeatherCacheRepository repository, @Value("${weather.cache-ttl:10m}") Duration ttl) {
+        if (ttl.isZero() || ttl.isNegative()) {
+            throw new IllegalArgumentException("Weather cache TTL must be positive");
+        }
+        this.repository = repository;
+        this.ttl = ttl;
     }
 
-    public WeatherCache saveCache(double lat, double lon, WeatherCacheType type, com.fasterxml.jackson.databind.JsonNode data) {
-        WeatherCache cache = weatherCacheRepository.findTopByLatAndLonAndType(lat, lon, type)
-                .orElse(WeatherCache.builder().lat(lat).lon(lon).type(type).build());
+    @Transactional(readOnly = true)
+    public Optional<WeatherCache> getFreshCache(double lat, double lon, WeatherCacheType type) {
+        return repository.findByLatAndLonAndType(lat, lon, type)
+                .filter(cache -> cache.getUpdatedAt().isAfter(Instant.now().minus(ttl)));
+    }
 
-        cache.setDataJson(data);
-        cache.setUpdatedAt(Instant.now());
-
-        return weatherCacheRepository.save(cache);
+    @Transactional
+    public void saveCache(double lat, double lon, WeatherCacheType type, JsonNode data) {
+        if (data == null || !data.isObject()) {
+            throw new IllegalArgumentException("Weather cache data must be a JSON object");
+        }
+        repository.upsert(UUID.randomUUID(), lat, lon, type.name(), data.toString(), Instant.now());
     }
 }
