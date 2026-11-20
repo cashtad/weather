@@ -104,7 +104,7 @@ export function mountApp(root) {
     state.location = location;
     const label =
       location.source === 'browser'
-        ? 'Device location (not saved)'
+        ? 'Device location'
         : location.source === 'ip'
           ? 'Using approximate location'
           : location.source === 'default'
